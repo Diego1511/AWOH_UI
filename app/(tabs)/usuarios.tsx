@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   useColorScheme,
   Platform,
+  Animated,
 } from "react-native";
 
 export default function UsuariosScreen() {
@@ -230,14 +231,15 @@ export default function UsuariosScreen() {
         }
       />
 
-      <Button
+      <TouchableOpacity
         style={styles.addButton}
-        status="success"
-        accessoryLeft={(props) => <Icon {...props} name="plus-outline" />}
         onPress={() => setAddModalVisible(true)}
+        activeOpacity={0.7}
       >
-        Agregar Usuario
-      </Button>
+        <Animated.View style={styles.addButtonInner}>
+          <Icon name="plus-outline" fill="#fff" style={styles.addButtonIcon} />
+        </Animated.View>
+      </TouchableOpacity>
 
       <Modal
         visible={isAddModalVisible}
@@ -444,11 +446,30 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
+    bottom: 70,
     right: 20,
-    borderRadius: 50,
-    paddingHorizontal: 20,
-    elevation: 5,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#3366ff",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+  },
+  addButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addButtonIcon: {
+    width: 24,
+    height: 24,
   },
   backdrop: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",

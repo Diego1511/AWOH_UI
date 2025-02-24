@@ -9,9 +9,20 @@ import {
   Icon,
   List,
 } from "@ui-kitten/components";
-import { StyleSheet, Alert, TouchableOpacity, Platform } from "react-native";
+import {
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Platform,
+  useColorScheme,
+} from "react-native";
 
-export default function InventoryScreen() {
+export default function InventarioScreen() {
+  const colorScheme = useColorScheme();
+  const backgroundColor = colorScheme === "dark" ? "#1a2a44" : "#f7f9fc";
+  const cardBackgroundColor = colorScheme === "dark" ? "#2d4373" : "#fff";
+  const textColor = colorScheme === "dark" ? "#e4e9f2" : "#222";
+
   const [products, setProducts] = useState([
     { id: "1", name: "Producto A", price: 10, stock: 50 },
     { id: "2", name: "Producto B", price: 20, stock: 30 },
@@ -93,7 +104,7 @@ export default function InventoryScreen() {
 
   const renderProduct = ({ item }) => (
     <Card
-      style={styles.productCard}
+      style={[styles.card, { backgroundColor: cardBackgroundColor }]}
       onPress={() => {
         setSelectedProduct(item);
         setNewProduct({
@@ -104,20 +115,25 @@ export default function InventoryScreen() {
         setEditModalVisible(true);
       }}
     >
-      <Layout style={styles.productContent}>
-        <Text category="s1" style={styles.productName}>
+      <Layout style={styles.cardContent}>
+        <Text category="s1" style={[styles.cardText, { color: textColor }]}>
           {item.name}
         </Text>
-        <Text category="p2" appearance="hint">
-          Precio: ${item.price.toFixed(2)} | Stock: {item.stock}
+        <Text category="p2" appearance="hint" style={styles.cardText}>
+          Precio: ${item.price.toFixed(2)}
         </Text>
+        <Text category="p2" appearance="hint" style={styles.cardText}>
+          Stock: {item.stock}
+        </Text>
+      </Layout>
+      <Layout style={styles.actionContainer}>
         {renderDeleteIcon({ width: 24, height: 24 }, item.id)}
       </Layout>
     </Card>
   );
 
   return (
-    <Layout style={styles.container}>
+    <Layout style={[styles.container, { backgroundColor }]}>
       <Input
         placeholder="Buscar producto..."
         value={searchQuery}
@@ -260,7 +276,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f7f9fc",
   },
   searchInput: {
     marginBottom: 16,
@@ -271,21 +286,27 @@ const styles = StyleSheet.create({
   productList: {
     flex: 1,
   },
-  productCard: {
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     borderRadius: 12,
-    backgroundColor: "#fff",
+    padding: 16,
     elevation: 3,
-    padding: 12,
+    ...(Platform.OS === "web" && { maxWidth: 800, alignSelf: "center" }), // Limitar ancho en web
   },
-  productContent: {
-    flexDirection: "column",
-    alignItems: "flex-start",
+  cardContent: {
+    flex: 1,
+    flexDirection: Platform.OS === "web" ? "row" : "column", // Horizontal en web, vertical en móvil
+    justifyContent: "space-between",
+    flexWrap: "wrap", // Permitir que los elementos se ajusten en varias líneas si es necesario
   },
-  productName: {
-    fontWeight: "bold",
-    color: "#222",
-    marginBottom: 4,
+  cardText: {
+    ...(Platform.OS === "web" && { flex: 1, minWidth: 150 }), // Distribución uniforme en web
+    ...(Platform.OS !== "web" && { marginBottom: 4 }), // Espaciado en móvil
+  },
+  actionContainer: {
+    marginLeft: 16,
   },
   emptyText: {
     textAlign: "center",
@@ -293,7 +314,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
+    bottom: 70,
     right: 20,
     borderRadius: 50,
     paddingHorizontal: 20,

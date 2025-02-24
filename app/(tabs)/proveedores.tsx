@@ -2,87 +2,77 @@ import React, { useState } from "react";
 import {
   Layout,
   Text,
+  Card,
+  List,
   Input,
   Button,
-  Card,
   Modal,
   Icon,
-  List,
 } from "@ui-kitten/components";
-import { StyleSheet, Alert, TouchableOpacity, Platform } from "react-native";
+import {
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Platform,
+  useColorScheme,
+} from "react-native";
 
-export default function SuppliersScreen() {
-  const [suppliers, setSuppliers] = useState([
-    {
-      id: "1",
-      name: "Proveedor A",
-      contact: "contactoA@example.com",
-      phone: "123456789",
-    },
-    {
-      id: "2",
-      name: "Proveedor B",
-      contact: "contactoB@example.com",
-      phone: "987654321",
-    },
-    {
-      id: "3",
-      name: "Proveedor C",
-      contact: "contactoC@example.com",
-      phone: "456123789",
-    },
+export default function ProveedoresScreen() {
+  const colorScheme = useColorScheme();
+  const backgroundColor = colorScheme === "dark" ? "#1a2a44" : "#f7f9fc";
+  const cardBackgroundColor = colorScheme === "dark" ? "#2d4373" : "#fff";
+  const textColor = colorScheme === "dark" ? "#e4e9f2" : "#222";
+
+  const [proveedores, setProveedores] = useState([
+    { id: "1", nombre: "Proveedor A", contacto: "proveedorA@email.com" },
+    { id: "2", nombre: "Proveedor B", contacto: "proveedorB@email.com" },
+    { id: "3", nombre: "Proveedor C", contacto: "proveedorC@email.com" },
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddModalVisible, setAddModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [newSupplier, setNewSupplier] = useState({
-    name: "",
-    contact: "",
-    phone: "",
+  const [newProveedor, setNewProveedor] = useState({
+    nombre: "",
+    contacto: "",
   });
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [selectedProveedor, setSelectedProveedor] = useState(null);
 
-  const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProveedores = proveedores.filter((proveedor) =>
+    proveedor.nombre.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddSupplier = () => {
-    if (!newSupplier.name || !newSupplier.contact || !newSupplier.phone) {
-      Alert.alert(
-        "Error",
-        "Por favor completa todos los campos correctamente."
-      );
+  const handleAddProveedor = () => {
+    if (!newProveedor.nombre || !newProveedor.contacto) {
+      Alert.alert("Error", "Por favor completa todos los campos.");
       return;
     }
-    const supplier = {
+    const proveedor = {
       id: Date.now().toString(),
-      ...newSupplier,
+      nombre: newProveedor.nombre,
+      contacto: newProveedor.contacto,
     };
-    setSuppliers([...suppliers, supplier]);
-    setNewSupplier({ name: "", contact: "", phone: "" });
+    setProveedores([...proveedores, proveedor]);
+    setNewProveedor({ nombre: "", contacto: "" });
     setAddModalVisible(false);
-    Alert.alert("Éxito", "Proveedor agregado.");
+    Alert.alert("Éxito", "Proveedor agregado correctamente.");
   };
 
-  const handleEditSupplier = () => {
-    if (!newSupplier.name || !newSupplier.contact || !newSupplier.phone) {
-      Alert.alert(
-        "Error",
-        "Por favor completa todos los campos correctamente."
-      );
+  const handleEditProveedor = () => {
+    if (!newProveedor.nombre || !newProveedor.contacto) {
+      Alert.alert("Error", "Por favor completa todos los campos.");
       return;
     }
-    const updatedSuppliers = suppliers.map((s) =>
-      s.id === selectedSupplier.id ? { ...s, ...newSupplier } : s
+    const updatedProveedores = proveedores.map((p) =>
+      p.id === selectedProveedor.id ? { ...p, ...newProveedor } : p
     );
-    setSuppliers(updatedSuppliers);
-    setNewSupplier({ name: "", contact: "", phone: "" });
+    setProveedores(updatedProveedores);
+    setNewProveedor({ nombre: "", contacto: "" });
     setEditModalVisible(false);
-    setSelectedSupplier(null);
-    Alert.alert("Éxito", "Proveedor modificado correctamente.");
+    setSelectedProveedor(null);
+    Alert.alert("Éxito", "Proveedor actualizado correctamente.");
   };
 
-  const handleDeleteSupplier = (id) => {
+  const handleDeleteProveedor = (id) => {
     Alert.alert(
       "Confirmar eliminación",
       "¿Estás seguro de que quieres eliminar este proveedor?",
@@ -92,7 +82,7 @@ export default function SuppliersScreen() {
           text: "Eliminar",
           style: "destructive",
           onPress: () => {
-            setSuppliers(suppliers.filter((s) => s.id !== id));
+            setProveedores(proveedores.filter((p) => p.id !== id));
             Alert.alert("Éxito", "Proveedor eliminado.");
           },
         },
@@ -101,38 +91,36 @@ export default function SuppliersScreen() {
   };
 
   const renderDeleteIcon = (props, id) => (
-    <TouchableOpacity onPress={() => handleDeleteSupplier(id)}>
+    <TouchableOpacity onPress={() => handleDeleteProveedor(id)}>
       <Icon {...props} name="trash-2-outline" fill="#ff3d71" />
     </TouchableOpacity>
   );
 
-  const renderSupplier = ({ item }) => (
+  const renderProveedor = ({ item }) => (
     <Card
-      style={styles.supplierCard}
+      style={[styles.card, { backgroundColor: cardBackgroundColor }]}
       onPress={() => {
-        setSelectedSupplier(item);
-        setNewSupplier({
-          name: item.name,
-          contact: item.contact,
-          phone: item.phone,
-        });
+        setSelectedProveedor(item);
+        setNewProveedor({ nombre: item.nombre, contacto: item.contacto });
         setEditModalVisible(true);
       }}
     >
-      <Layout style={styles.supplierContent}>
-        <Text category="s1" style={styles.supplierName}>
-          {item.name}
+      <Layout style={styles.cardContent}>
+        <Text category="s1" style={[styles.cardText, { color: textColor }]}>
+          {item.nombre}
         </Text>
-        <Text category="p2" appearance="hint">
-          Contacto: {item.contact} | Teléfono: {item.phone}
+        <Text category="p2" appearance="hint" style={styles.cardText}>
+          Contacto: {item.contacto}
         </Text>
+      </Layout>
+      <Layout style={styles.actionContainer}>
         {renderDeleteIcon({ width: 24, height: 24 }, item.id)}
       </Layout>
     </Card>
   );
 
   return (
-    <Layout style={styles.container}>
+    <Layout style={[styles.container, { backgroundColor }]}>
       <Input
         placeholder="Buscar proveedor..."
         value={searchQuery}
@@ -148,17 +136,18 @@ export default function SuppliersScreen() {
       />
 
       <List
-        data={filteredSuppliers}
-        renderItem={renderSupplier}
+        data={filteredProveedores}
+        renderItem={renderProveedor}
         keyExtractor={(item) => item.id}
-        style={styles.supplierList}
+        style={styles.list}
         ListEmptyComponent={
           <Text category="p1" appearance="hint" style={styles.emptyText}>
-            No se encontraron proveedores.
+            No hay proveedores registrados.
           </Text>
         }
       />
 
+      {/* Botón flotante para agregar proveedor, ajustado para quedar encima de la barra */}
       <Button
         style={styles.addButton}
         status="success"
@@ -179,27 +168,19 @@ export default function SuppliersScreen() {
           </Text>
           <Input
             placeholder="Nombre"
-            value={newSupplier.name}
+            value={newProveedor.nombre}
             onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, name: text })
+              setNewProveedor({ ...newProveedor, nombre: text })
             }
             style={styles.modalInput}
           />
           <Input
             placeholder="Contacto"
-            value={newSupplier.contact}
+            value={newProveedor.contacto}
             onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, contact: text })
+              setNewProveedor({ ...newProveedor, contacto: text })
             }
-            style={styles.modalInput}
-          />
-          <Input
-            placeholder="Teléfono"
-            value={newSupplier.phone}
-            onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, phone: text })
-            }
-            keyboardType="phone-pad"
+            keyboardType="email-address"
             style={styles.modalInput}
           />
           <Layout style={styles.modalButtons}>
@@ -210,7 +191,7 @@ export default function SuppliersScreen() {
             >
               Cancelar
             </Button>
-            <Button onPress={handleAddSupplier} style={styles.modalButton}>
+            <Button onPress={handleAddProveedor} style={styles.modalButton}>
               Guardar
             </Button>
           </Layout>
@@ -228,27 +209,19 @@ export default function SuppliersScreen() {
           </Text>
           <Input
             placeholder="Nombre"
-            value={newSupplier.name}
+            value={newProveedor.nombre}
             onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, name: text })
+              setNewProveedor({ ...newProveedor, nombre: text })
             }
             style={styles.modalInput}
           />
           <Input
             placeholder="Contacto"
-            value={newSupplier.contact}
+            value={newProveedor.contacto}
             onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, contact: text })
+              setNewProveedor({ ...newProveedor, contacto: text })
             }
-            style={styles.modalInput}
-          />
-          <Input
-            placeholder="Teléfono"
-            value={newSupplier.phone}
-            onChangeText={(text) =>
-              setNewSupplier({ ...newSupplier, phone: text })
-            }
-            keyboardType="phone-pad"
+            keyboardType="email-address"
             style={styles.modalInput}
           />
           <Layout style={styles.modalButtons}>
@@ -259,7 +232,7 @@ export default function SuppliersScreen() {
             >
               Cancelar
             </Button>
-            <Button onPress={handleEditSupplier} style={styles.modalButton}>
+            <Button onPress={handleEditProveedor} style={styles.modalButton}>
               Actualizar
             </Button>
           </Layout>
@@ -273,7 +246,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f7f9fc",
   },
   searchInput: {
     marginBottom: 16,
@@ -281,24 +253,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     elevation: 2,
   },
-  supplierList: {
+  list: {
     flex: 1,
   },
-  supplierCard: {
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     borderRadius: 12,
-    backgroundColor: "#fff",
+    padding: 16,
     elevation: 3,
-    padding: 12,
+    ...(Platform.OS === "web" && { maxWidth: 800, alignSelf: "center" }),
   },
-  supplierContent: {
-    flexDirection: "column",
-    alignItems: "flex-start",
+  cardContent: {
+    flex: 1,
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
   },
-  supplierName: {
-    fontWeight: "bold",
-    color: "#222",
-    marginBottom: 4,
+  cardText: {
+    ...(Platform.OS === "web" && { flex: 1, minWidth: 150 }),
+    ...(Platform.OS !== "web" && { marginBottom: 4 }),
+  },
+  actionContainer: {
+    marginLeft: 16,
   },
   emptyText: {
     textAlign: "center",
@@ -306,7 +284,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
+    bottom: 90, // Subido para evitar la barra de navegación (antes era 20)
     right: 20,
     borderRadius: 50,
     paddingHorizontal: 20,
