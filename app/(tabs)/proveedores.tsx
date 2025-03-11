@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 90, // Subido para evitar la barra de navegación (antes era 20)
+    bottom: 70,
     right: 20,
     borderRadius: 50,
     paddingHorizontal: 20,
