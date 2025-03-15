@@ -6,26 +6,24 @@ import {
   Button,
   Card,
   Toggle,
+  CheckBox,
   Select,
   SelectItem,
   IndexPath,
-  Icon,
-  List,
 } from "@ui-kitten/components";
-import {
-  FlatList,
-  ScrollView,
-  Alert,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { FlatList, ScrollView, Alert, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   // Estados
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState(new IndexPath(0));
+  const [quantity, setQuantity] = useState("1");
+  const [paymentMethods, setPaymentMethods] = useState({
+    efectivo: false,
+    debito: false,
+    credito: false,
+    transferencia: false,
+  });
   const [totalPrice, setTotalPrice] = useState(0);
   const [electronicInvoice, setElectronicInvoice] = useState(false);
   const [name, setName] = useState("");
@@ -33,7 +31,8 @@ export default function HomeScreen() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [taxRegime, setTaxRegime] = useState(new IndexPath(0));
-  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [paymentAmount, setPaymentAmount] = useState("");
+
   const [productsInCart, setProductsInCart] = useState([]);
 
   // Lista de productos simulada
@@ -44,7 +43,6 @@ export default function HomeScreen() {
   ];
 
   // Opciones para Select
-  const paymentOptions = ["Efectivo", "Tarjeta"];
   const taxRegimeOptions = ["Persona Natural", "Persona Jurídica"];
 
   // Función para buscar productos
@@ -54,7 +52,7 @@ export default function HomeScreen() {
     );
     if (foundProduct) {
       setSelectedProduct(foundProduct);
-      setTotalPrice(foundProduct.price * quantity);
+      setTotalPrice(foundProduct.price * (parseInt(quantity) || 1));
     } else {
       Alert.alert(
         "Producto no encontrado",
@@ -72,11 +70,12 @@ export default function HomeScreen() {
 
   // Agregar producto al carrito
   const addProductToCart = () => {
+    const qty = parseInt(quantity) || 1;
     if (selectedProduct) {
-      const product = { ...selectedProduct, quantity };
+      const product = { ...selectedProduct, quantity: qty };
       setProductsInCart([...productsInCart, product]);
       setSelectedProduct(null);
-      setQuantity(1);
+      setQuantity("1");
       setSearchQuery("");
       Alert.alert(
         "Producto agregado",
@@ -102,7 +101,7 @@ export default function HomeScreen() {
       style={styles.productCard}
       onPress={() => {
         setSelectedProduct(item);
-        setTotalPrice(item.price * quantity);
+        setTotalPrice(item.price * (parseInt(quantity, 10) || 1));
       }}
     >
       <Text category="s1" style={styles.productName}>
@@ -150,6 +149,27 @@ export default function HomeScreen() {
     </Button>
   );
 
+  // Renderizar los checkboxes de métodos de pago
+  const renderPaymentMethodCheckboxes = () => (
+    <Layout style={styles.paymentMethodsContainer}>
+      {Object.keys(paymentMethods).map((method) => (
+        <CheckBox
+          key={method}
+          checked={paymentMethods[method]}
+          onChange={(checked) =>
+            setPaymentMethods((prevState) => ({
+              ...prevState,
+              [method]: checked,
+            }))
+          }
+          style={styles.paymentMethodCheckbox}
+        >
+          {method.charAt(0).toUpperCase() + method.slice(1)}
+        </CheckBox>
+      ))}
+    </Layout>
+  );
+
   return (
     <Layout style={styles.container}>
       {/* Búsqueda */}
@@ -180,11 +200,10 @@ export default function HomeScreen() {
           <Input
             style={styles.quantityInput}
             keyboardType="numeric"
-            value={quantity.toString()}
+            value={quantity}
             onChangeText={(text) => {
-              const newQuantity = parseInt(text, 10) || 1;
-              setQuantity(newQuantity);
-              calculateTotalPrice(newQuantity);
+              setQuantity(text);
+              calculateTotalPrice(parseInt(text, 10) || 1);
             }}
           />
           <Button
@@ -220,30 +239,24 @@ export default function HomeScreen() {
           <Text category="label" style={styles.sectionLabel}>
             Medio de pago:
           </Text>
-          <Select
-            value={paymentOptions[paymentMethod.row]}
-            selectedIndex={paymentMethod}
-            onSelect={(index) => setPaymentMethod(index)}
-            style={styles.select}
-          >
-            {paymentOptions.map((option, index) => (
-              <SelectItem key={index} title={option} />
-            ))}
-          </Select>
+          {renderPaymentMethodCheckboxes()}
         </Layout>
 
         {/* Monto entregado (si es efectivo) */}
-        {paymentOptions[paymentMethod.row] === "Efectivo" && (
+        {paymentMethods.efectivo && (
           <Layout style={styles.section}>
             <Input
-              placeholder="Monto entregado"
+              placeholder="Valor entregado"
               value={paymentAmount.toString()}
-              onChangeText={(text) => setPaymentAmount(parseFloat(text) || 0)}
+              onChangeText={(text) =>
+                setPaymentAmount(text.replace(/[^0-9]/g, ""))
+              }
               keyboardType="numeric"
               style={styles.input}
             />
             <Text category="s1" style={styles.changeText}>
-              Cambio: ${(paymentAmount - totalPrice).toFixed(2)}
+              Cambio: $
+              {(parseFloat(paymentAmount || 0) - totalPrice).toFixed(2)}
             </Text>
           </Layout>
         )}
@@ -304,17 +317,16 @@ export default function HomeScreen() {
             </Select>
           </Layout>
         )}
-
-        {/* Precio final */}
-        <Layout style={styles.totalContainer}>
-          <Text category="h6" style={styles.totalLabel}>
-            Precio final:
-          </Text>
-          <Text category="h4" status="success">
-            ${totalPrice.toFixed(2)}
-          </Text>
-        </Layout>
       </ScrollView>
+      {/* Precio final */}
+      <Layout style={styles.totalContainer}>
+        <Text category="h6" style={styles.totalLabel}>
+          Precio final:
+        </Text>
+        <Text category="h4" status="success">
+          ${totalPrice.toFixed(2)}
+        </Text>
+      </Layout>
     </Layout>
   );
 }
@@ -404,6 +416,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     elevation: 2,
+    paddingBottom: 100, // Añadimos espacio inferior para evitar que la barra de tabs cubra los elementos
   },
   section: {
     marginBottom: 16,
@@ -411,11 +424,19 @@ const styles = StyleSheet.create({
   sectionLabel: {
     marginBottom: 8,
   },
+  paymentMethodsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  paymentMethodCheckbox: {
+    marginRight: 8,
+    marginBottom: 8,
+  },
   select: {
     borderRadius: 8,
   },
   input: {
-    marginBottom: 12,
+    marginBottom: 15,
     borderRadius: 8,
   },
   changeText: {
@@ -427,9 +448,11 @@ const styles = StyleSheet.create({
   },
   totalContainer: {
     alignItems: "center",
-    marginTop: 16,
+    padding: 16,
+    backgroundColor: "#fff",
+    elevation: 2,
   },
   totalLabel: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
 });

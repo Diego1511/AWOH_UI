@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   tabBarDark: {
-    shadowColor: "#fff",
-    shadowOpacity: 0.05,
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
   },
   gradientBackground: {
     flex: 1,
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   tabBarIconContainerActive: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
 });
